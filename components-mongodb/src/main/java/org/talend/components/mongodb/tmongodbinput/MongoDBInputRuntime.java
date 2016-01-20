@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.runtime.SimpleInputRuntime;
 import org.talend.components.api.runtime.SingleOutputConnector;
-import org.talend.components.mongodb.DBObjectIndexedRecordWrapper;
+import org.talend.components.mongodb.BSONObjectIndexedRecordWrapper;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -30,7 +30,7 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
-public class MongoDBInputRuntime implements SimpleInputRuntime<DBObjectIndexedRecordWrapper> {
+public class MongoDBInputRuntime implements SimpleInputRuntime<BSONObjectIndexedRecordWrapper> {
 
     private static final long serialVersionUID = 8345765264712176890L;
 
@@ -62,13 +62,13 @@ public class MongoDBInputRuntime implements SimpleInputRuntime<DBObjectIndexedRe
     }
 
     @Override
-    public void execute(SingleOutputConnector<DBObjectIndexedRecordWrapper> soc) throws Exception {
+    public void execute(SingleOutputConnector<BSONObjectIndexedRecordWrapper> soc) throws Exception {
         DBCollection coll = db.getCollection(DB_COLLECTION);
         com.mongodb.DBObject myQuery = (com.mongodb.DBObject) com.mongodb.util.JSON.parse(QUERY);
         com.mongodb.DBObject fields = new com.mongodb.BasicDBObject();
         DBCursor cursor = coll.find(myQuery, fields);
         while (cursor.hasNext()) {
-            soc.outputMainData(new DBObjectIndexedRecordWrapper(cursor.next()));
+            soc.outputMainData(new BSONObjectIndexedRecordWrapper(cursor.next()));
         }
     }
 

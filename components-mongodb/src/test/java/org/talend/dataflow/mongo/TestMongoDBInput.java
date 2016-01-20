@@ -13,7 +13,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.talend.components.engine.gdf.SimpleInputGDF;
 import org.talend.components.engine.gdf.SimpleOutputGDF;
-import org.talend.components.mongodb.DBObjectIndexedRecordWrapper;
+import org.talend.components.mongodb.BSONObjectIndexedRecordWrapper;
 import org.talend.components.mongodb.tmongodbinput.MongoDBInputRuntime;
 import org.talend.components.mongodb.tmongodboutput.MongoDBOutputRuntime;
 
@@ -137,7 +137,7 @@ public class TestMongoDBInput {
         // TransformTranslator.addTransformEvaluator(CassandraIO.Read.Bound.class, new
         // CassandraInputTransformEvaluator());
         // create GDF components
-        SimpleInputGDF<DBObjectIndexedRecordWrapper> input = new SimpleInputGDF<>(new MongoDBInputRuntime());
+        SimpleInputGDF<BSONObjectIndexedRecordWrapper> input = new SimpleInputGDF<>(new MongoDBInputRuntime());
         // SimpleTransformationGDF<DBObject, Map<String, Object>, Map<String, Object>> extract = new
         // SimpleTransformationGDF<>(
         // new MongoDBExtractRuntime());

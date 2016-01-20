@@ -9,27 +9,26 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.IndexedRecord;
-
-import com.mongodb.DBObject;
+import org.bson.BSONObject;
 
 /**
- * Wraps a MongoDB implementation-specific {@link DBObject} in an {@link IndexedRecord} so that subsequent components
+ * Wraps a MongoDB implementation-specific {@link BSONObject} in an {@link IndexedRecord} so that subsequent components
  * can access it in a standard way.
  */
-public class DBObjectIndexedRecordWrapper implements IndexedRecord {
+public class BSONObjectIndexedRecordWrapper implements IndexedRecord {
 
     /** The wrapped, original DBObject. */
-    private DBObject mWrapped;
+    private BSONObject mWrapped;
 
     transient private Schema mSchema;
 
     transient private Map<String, Integer> mNameToPosition;
 
-    private DBObjectIndexedRecordWrapper() {
+    private BSONObjectIndexedRecordWrapper() {
         // For Kryo (for now). To be removed when the AvroCoder is added.
     }
 
-    public DBObjectIndexedRecordWrapper(DBObject next) {
+    public BSONObjectIndexedRecordWrapper(BSONObject next) {
         setWrapped(next, null);
     }
 
@@ -61,7 +60,7 @@ public class DBObjectIndexedRecordWrapper implements IndexedRecord {
         return mWrapped.get(getSchema().getFields().get(i).name());
     }
 
-    public void setWrapped(DBObject wrapped, Schema schema) {
+    public void setWrapped(BSONObject wrapped, Schema schema) {
         mWrapped = wrapped;
         mSchema = schema;
     }
