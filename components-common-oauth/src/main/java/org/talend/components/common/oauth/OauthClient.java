@@ -12,8 +12,6 @@
 // ============================================================================
 package org.talend.components.common.oauth;
 
-import java.net.URL;
-
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
@@ -26,9 +24,10 @@ import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.talend.components.common.oauth.util.AuthorizationCodeCallBackHandler;
 import org.talend.components.common.oauth.util.HttpsService;
 
+import java.net.URL;
+
 /**
  * created by bchen on Sep 11, 2015 Detailled comment
- *
  */
 public class OauthClient {
 
@@ -49,6 +48,15 @@ public class OauthClient {
     private String refreshToken;
 
     private GrantType grantType;
+
+    private static OauthAuthorizeUrlHandler urlHandler = new DefaultOauthAuthorizeUrlHandler();
+
+    /**
+     * registry the right handler only one time for each platform
+     */
+    public static void registryAuthorizeUrlHandler(OauthAuthorizeUrlHandler urlHandler) {
+        OauthClient.urlHandler = urlHandler;
+    }
 
     private OauthClient(Builder builder) {
         this.tokenLocation = builder.tokenLocation;
@@ -81,8 +89,7 @@ public class OauthClient {
                 builder.setResponseType(responseType);
             }
             OAuthClientRequest request = builder.buildQueryMessage();
-            System.out.println("Paste this URL into a web browser to authorize Salesforce Access:");
-            System.out.println(request.getLocationUri());
+            urlHandler.display(request.getLocationUri());
         } catch (OAuthSystemException e) {
             e.printStackTrace();
         }
@@ -103,9 +110,9 @@ public class OauthClient {
         return code;
     }
 
+
     public <T extends OAuthAccessTokenResponse> T getToken(Class<T> tokenResponseClass) {
         try {
-            OAuthClientRequest request = null;
             TokenRequestBuilder builder = OAuthClientRequest.tokenLocation(tokenLocation.toString()).setGrantType(grantType)
                     .setClientId(clientID).setClientSecret(clientSecret);
             if (GrantType.AUTHORIZATION_CODE == grantType) {
@@ -113,12 +120,10 @@ public class OauthClient {
             } else if (GrantType.REFRESH_TOKEN == grantType) {
                 builder = builder.setRefreshToken(refreshToken);
             }
-            request = builder.buildQueryMessage();
+            OAuthClientRequest request = builder.buildQueryMessage();
             OAuthClient oauthClient = new OAuthClient(new URLConnectionClient());
             return oauthClient.accessToken(request, tokenResponseClass);
-        } catch (OAuthSystemException e) {
-            e.printStackTrace();
-        } catch (OAuthProblemException e) {
+        } catch (OAuthSystemException | OAuthProblemException e) {
             e.printStackTrace();
         }
         return null;
