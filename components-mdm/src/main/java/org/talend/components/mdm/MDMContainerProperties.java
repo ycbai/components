@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.components.mdm;
 
+import static org.talend.components.mdm.MDMConstants.DEFAULT_TYPE;
 import static org.talend.components.mdm.MDMConstants.MASTER;
 import static org.talend.components.mdm.MDMConstants.STAGING;
 import static org.talend.components.mdm.MDMConstants.SYSTEM;
@@ -30,8 +31,8 @@ public class MDMContainerProperties extends ComponentProperties {
 
     public MDMContainerProperties(String name) {
         super(name);
-        containerName.setValue("Type1"); //$NON-NLS-1$
-        containerType.setValue(MASTER);
+        containerName.setDefaultValue(DEFAULT_TYPE);
+        containerType.setDefaultValue(MASTER);
     }
 
     @Override

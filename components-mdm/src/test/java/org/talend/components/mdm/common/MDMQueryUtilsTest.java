@@ -9,14 +9,14 @@ import java.util.List;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.talend.components.mdm.query.MDMQueryUtils;
+import org.talend.components.mdm.MDMCommonUtils;
 
 public class MDMQueryUtilsTest {
 
     @Test
     public void testGuessQueryFromSchema() throws Exception {
         List<String> fields = Arrays.asList("Field_1", "Field_2", "Field_3");
-        String query = MDMQueryUtils.guessQueryFromSchema(fields);
+        String query = MDMCommonUtils.guessQueryFromFields(fields);
         JSONObject queryJson = new JSONObject(query);
         String excepted = "{\"select\":{\"from\":[\"Type1\"],\"fields\":[{\"field\":\"Type1\\/Field_1\"},{\"field\":\"Type1\\/Field_2\"},{\"field\":\"Type1\\/Field_3\"}]}}";
         JSONObject exceptedJson = new JSONObject(excepted);
@@ -39,7 +39,7 @@ public class MDMQueryUtilsTest {
         sb.append("    }");
         sb.append("}");
 
-        Collection<String> fields = MDMQueryUtils.guessSchemaFromQuery(sb.toString());
+        Collection<String> fields = MDMCommonUtils.guessFieldsFromQuery(sb.toString());
         assertEquals(fields.size(), 5);
         String[] exptectd = { "Field_1", "Field_2", "Field_3", "Field_4", "Field_5" };
         assertArrayEquals(exptectd, fields.toArray(new String[5]));
@@ -53,7 +53,7 @@ public class MDMQueryUtilsTest {
         sb.append("      ]");
         sb.append("    }");
         sb.append("}");
-        fields = MDMQueryUtils.guessSchemaFromQuery(sb.toString());
+        fields = MDMCommonUtils.guessFieldsFromQuery(sb.toString());
         assertEquals(fields.size(), 0);
 
         sb = new StringBuilder();
@@ -65,7 +65,7 @@ public class MDMQueryUtilsTest {
         sb.append("      ]");
         sb.append("    }");
         sb.append("}");
-        fields = MDMQueryUtils.guessSchemaFromQuery(sb.toString());
+        fields = MDMCommonUtils.guessFieldsFromQuery(sb.toString());
         assertEquals(fields.size(), 0);
     }
 }

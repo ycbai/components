@@ -10,40 +10,30 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mdm.query;
+package org.talend.components.mdm;
 
-import static org.talend.components.mdm.query.MDMQueryConstants.ALIAS;
-import static org.talend.components.mdm.query.MDMQueryConstants.COUNT;
-import static org.talend.components.mdm.query.MDMQueryConstants.DISTINCT;
-import static org.talend.components.mdm.query.MDMQueryConstants.FIELD;
-import static org.talend.components.mdm.query.MDMQueryConstants.FIELDS;
-import static org.talend.components.mdm.query.MDMQueryConstants.FROM;
-import static org.talend.components.mdm.query.MDMQueryConstants.MAX;
-import static org.talend.components.mdm.query.MDMQueryConstants.METADATA;
-import static org.talend.components.mdm.query.MDMQueryConstants.MIN;
-import static org.talend.components.mdm.query.MDMQueryConstants.SELECT;
+import static org.talend.components.mdm.MDMConstants.ALIAS;
+import static org.talend.components.mdm.MDMConstants.COUNT;
+import static org.talend.components.mdm.MDMConstants.DEFAULT_TYPE;
+import static org.talend.components.mdm.MDMConstants.DISTINCT;
+import static org.talend.components.mdm.MDMConstants.FIELD;
+import static org.talend.components.mdm.MDMConstants.FIELDS;
+import static org.talend.components.mdm.MDMConstants.FROM;
+import static org.talend.components.mdm.MDMConstants.MAX;
+import static org.talend.components.mdm.MDMConstants.METADATA;
+import static org.talend.components.mdm.MDMConstants.MIN;
+import static org.talend.components.mdm.MDMConstants.SELECT;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class MDMQueryUtils {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MDMQueryUtils.class);
+public class MDMCommonUtils {
 
     /**
      * Get field's name from field json object
@@ -55,7 +45,7 @@ public class MDMQueryUtils {
     private static String getFieldName(JSONObject fieldObject) throws JSONException {
         if (fieldObject.has(FIELD)) {// {"field" : "Type1/Field1"}
             String xpath = fieldObject.getString(FIELD);
-            return StringUtils.substringAfterLast(xpath, "/");
+            return StringUtils.substringAfterLast(xpath, "/"); //$NON-NLS-1$
         } else { // {"metadata" : "task_id"}
             return fieldObject.getString(METADATA);
         }
@@ -67,7 +57,7 @@ public class MDMQueryUtils {
      * @param query
      * @return
      */
-    public static Collection<String> guessSchemaFromQuery(String query) throws JSONException {
+    public static Collection<String> guessFieldsFromQuery(String query) throws JSONException {
         Set<String> fields = new LinkedHashSet<String>();
         JSONObject queryObject = new JSONObject(query);
         JSONArray fieldsArray = queryObject.getJSONObject(SELECT).getJSONArray(FIELDS);
@@ -101,14 +91,14 @@ public class MDMQueryUtils {
      * @return
      * @throws JSONException
      */
-    public static String guessQueryFromSchema(Collection<String> fields) throws JSONException {
+    public static String guessQueryFromFields(Collection<String> fields) throws JSONException {
         JSONArray fieldsArray = new JSONArray();
         for (String field : fields) {
             JSONObject fieldObject = new JSONObject();
-            fieldObject.put(FIELD, "Type1/" + field);
+            fieldObject.put(FIELD, DEFAULT_TYPE + '/' + field);
             fieldsArray.put(fieldObject);
         }
-        JSONArray fromArray = new JSONArray().put("Type1");
+        JSONArray fromArray = new JSONArray().put(DEFAULT_TYPE);
         JSONObject selectObject = new JSONObject().put(FROM, fromArray).put(FIELDS, fieldsArray);
         JSONObject queryObject = new JSONObject().put(SELECT, selectObject);
         return queryObject.toString();
@@ -121,8 +111,8 @@ public class MDMQueryUtils {
      * @return
      */
     public static String formatJson(String jsonStr) {
-        if (null == jsonStr || "".equals(jsonStr))
-            return "";
+        if (StringUtils.isEmpty(jsonStr))
+            return ""; //$NON-NLS-1$
         StringBuilder sb = new StringBuilder();
         char last = '\0';
         char current = '\0';
@@ -168,38 +158,8 @@ public class MDMQueryUtils {
      */
     private static void addIndentBlank(StringBuilder sb, int indent) {
         for (int i = 0; i < indent; i++) {
-            sb.append("  ");
+            sb.append("  "); //$NON-NLS-1$
         }
-    }
-
-    /**
-     * Call REST API to get xml results
-     * 
-     * @param url
-     * @param username
-     * @param password
-     * @param containerName
-     * @param containerType
-     * @param queryText
-     * @return
-     */
-    public static String executeQuery(String url, String username, String password, String containerName, String containerType,
-            String queryText) {
-        String results = null;
-        HttpAuthenticationFeature authFeature = HttpAuthenticationFeature.basic(username, password);
-        Client client = ClientBuilder.newClient().register(authFeature);
-        Response response = client.target(url).path(containerName).path("query").queryParam("container", containerType).request()
-                .accept(MediaType.APPLICATION_XML).put(Entity.json(queryText));
-        if (response.getStatus() == 200) {
-            results = response.readEntity(String.class);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Get result: \n" + results);
-            }
-        } else {
-            LOGGER.error(response.toString());
-            throw new RuntimeException(response.toString());
-        }
-        return results;
     }
 
 }

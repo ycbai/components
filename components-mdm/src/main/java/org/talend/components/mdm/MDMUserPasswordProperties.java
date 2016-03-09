@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.components.mdm;
 
+import static org.talend.components.mdm.MDMConstants.DEFAULT_USER;
 import static org.talend.daikon.properties.presentation.Widget.widget;
 
 import org.talend.components.common.UserPasswordProperties;
@@ -22,7 +23,7 @@ public class MDMUserPasswordProperties extends UserPasswordProperties {
 
     public MDMUserPasswordProperties(String name) {
         super(name);
-        userId.setValue("userName"); //$NON-NLS-1$
+        userId.setValue(DEFAULT_USER);
     }
 
     @Override

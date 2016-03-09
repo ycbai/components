@@ -10,30 +10,28 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.components.mdm.tmdmrestinput;
+package org.talend.components.mdm.tmdmrestconnection;
 
 import org.talend.components.api.Constants;
 import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.component.Connector;
 import org.talend.components.api.component.Connector.ConnectorType;
-import org.talend.components.api.component.InputComponentDefinition;
 import org.talend.components.api.component.Trigger;
 import org.talend.components.api.component.Trigger.TriggerType;
-import org.talend.components.api.component.runtime.Source;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.mdm.MDMConnectionProperties;
-import org.talend.components.mdm.MDMContainerProperties;
 import org.talend.components.mdm.MDMDefinition;
 import org.talend.components.mdm.MDMUserPasswordProperties;
 
 import aQute.bnd.annotation.component.Component;
 
-@Component(name = Constants.COMPONENT_BEAN_PREFIX + TMDMRestInputDefinition.COMPONENT_NAME, provide = ComponentDefinition.class)
-public class TMDMRestInputDefinition extends MDMDefinition implements InputComponentDefinition {
+@Component(name = Constants.COMPONENT_BEAN_PREFIX
+        + TMDMRestConnectionDefinition.COMPONENT_NAME, provide = ComponentDefinition.class)
+public class TMDMRestConnectionDefinition extends MDMDefinition {
 
-    public static final String COMPONENT_NAME = "tMDMRestInput"; //$NON-NLS-1$
+    public static final String COMPONENT_NAME = "tMDMRestConnection"; //$NON-NLS-1$
 
-    public TMDMRestInputDefinition() {
+    public TMDMRestConnectionDefinition() {
         super(COMPONENT_NAME);
         setConnectors(new Connector(ConnectorType.MAIN, 0, 1), new Connector(ConnectorType.REJECT, 0, 1));
         setTriggers(new Trigger(TriggerType.ITERATE, 1, 1), new Trigger(TriggerType.SUBJOB_OK, 1, 0),
@@ -42,18 +40,14 @@ public class TMDMRestInputDefinition extends MDMDefinition implements InputCompo
     }
 
     @Override
-    public Source getRuntime() {
-        return new TMDMRestInputSource();
-    }
-
-    @Override
-    public Class<TMDMRestInputProperties> getPropertyClass() {
-        return TMDMRestInputProperties.class;
+    public Class<MDMConnectionProperties> getPropertyClass() {
+        return MDMConnectionProperties.class;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Class<? extends ComponentProperties>[] getNestedCompatibleComponentPropertiesClass() {
-        return new Class[] { MDMConnectionProperties.class, MDMContainerProperties.class, MDMUserPasswordProperties.class };
+        return new Class[] { MDMUserPasswordProperties.class };
     }
+
 }

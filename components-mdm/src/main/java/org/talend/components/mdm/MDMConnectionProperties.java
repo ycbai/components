@@ -26,7 +26,7 @@ public class MDMConnectionProperties extends ComponentProperties {
 
     public MDMConnectionProperties(String name, String defaultUrl) {
         super(name);
-        url.setValue(defaultUrl);
+        url.setDefaultValue(defaultUrl);
     }
 
     @Override

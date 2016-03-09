@@ -27,12 +27,12 @@ public abstract class MDMDefinition extends AbstractComponentDefinition {
 
     @Override
     public InputStream getMavenPom() {
-        return this.getClass().getResourceAsStream("/org/talend/components/mdm/pom.xml");
+        return this.getClass().getResourceAsStream("/org/talend/components/mdm/pom.xml"); //$NON-NLS-1$
     }
 
     @Override
     public String[] getFamilies() {
-        return new String[] { "Talend MDM" };
+        return new String[] { "Talend MDM" }; //$NON-NLS-1$
     }
 
     @Override
