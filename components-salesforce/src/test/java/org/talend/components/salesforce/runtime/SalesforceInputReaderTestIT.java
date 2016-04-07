@@ -12,8 +12,6 @@
 // ============================================================================
 package org.talend.components.salesforce.runtime;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -22,15 +20,10 @@ import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.IndexedRecord;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.component.runtime.BoundedReader;
 import org.talend.components.api.test.ComponentTestUtils;
 import org.talend.components.salesforce.SalesforceTestBase;
-import org.talend.components.salesforce.tsalesforceinput.TSalesforceInputDefinition;
 import org.talend.components.salesforce.tsalesforceinput.TSalesforceInputProperties;
-
-import java.io.IOException;
-import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

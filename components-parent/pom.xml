@@ -63,6 +63,21 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>com.google.cloud.dataflow</groupId>
+				<artifactId>google-cloud-dataflow-java-sdk-all</artifactId>
+				<version>1.5.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.api-client</groupId>
+				<artifactId>google-api-client</artifactId>
+				<version>1.21.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.apis</groupId>
+				<artifactId>google-api-services-dataflow</artifactId>
+				<version>v1b3-rev22-1.21.0</version>
+			</dependency>
+			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-webmvc</artifactId>
 				<version>${spring.version}</version>
