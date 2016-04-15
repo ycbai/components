@@ -1,11 +1,23 @@
 package org.talend.components.container.gdf;
 
 import com.google.cloud.dataflow.sdk.transforms.DoFn;
+import com.google.cloud.dataflow.sdk.values.PCollection;
+import com.google.cloud.dataflow.sdk.values.PInput;
+import com.google.cloud.dataflow.sdk.values.POutput;
+import org.talend.components.api.component.runtime.TransformerDoFn;
 
-public class DoFnAdaptor extends DoFn {
+public class DoFnAdaptor<TInput extends PCollection<?>, TOutput extends PCollection<?>> extends DoFn<TInput, TOutput> {
+
+    protected TransformerDoFn transformer;
+
+
+    public DoFnAdaptor(TransformerDoFn transformer) {
+        this.transformer = transformer;
+    }
 
     @Override
     public void startBundle(Context c) throws Exception {
+        //transformer.startBundle();
     }
 
     @Override

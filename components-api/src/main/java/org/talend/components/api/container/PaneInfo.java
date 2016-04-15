@@ -21,18 +21,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 
-import org.talend.components.api.component.runtime.transformer.DoFn;
-
-import com.google.cloud.dataflow.sdk.coders.AtomicCoder;
-import com.google.cloud.dataflow.sdk.coders.Coder;
-import com.google.cloud.dataflow.sdk.coders.CoderException;
-import com.google.cloud.dataflow.sdk.transforms.DoFn;
-import com.google.cloud.dataflow.sdk.transforms.GroupByKey;
-import com.google.cloud.dataflow.sdk.util.VarInt;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-
 /**
  * Provides information about the pane an element belongs to. Every pane is implicitly associated
  * with a window. Panes are observable only via the

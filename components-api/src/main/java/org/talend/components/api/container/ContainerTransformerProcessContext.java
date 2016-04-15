@@ -1,14 +1,13 @@
 package org.talend.components.api.container;
 
+import org.apache.avro.generic.IndexedRecord;
+
 import java.time.Instant;
 
-import org.talend.components.api.component.runtime.transformer.BoundedWindow;
-import org.talend.components.api.component.runtime.transformer.PaneInfo;
-
 /**
- * Information accessible when running {@link DoFn#processElement}.
+ * Information accessible when running {@link org.talend.components.api.component.runtime.TransformerDoFn#processElement}.
  */
-public interface ContainerTransformerProcessContext {
+public interface ContainerTransformerProcessContext extends ContainerTransformerContext {
 
     /**
      * Returns the input element to be processed.
@@ -18,7 +17,7 @@ public interface ContainerTransformerProcessContext {
      * cache, etc. The element should not be mutated by any of the {@link DoFn} methods, because it may be cached
      * elsewhere, retained by the Dataflow runtime, or used in other unspecified ways.
      */
-    public abstract Object element();
+    public abstract IndexedRecord element();
 
     /**
      * Returns the value of the side input for the window corresponding to the window of the main input element.

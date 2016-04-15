@@ -1,8 +1,8 @@
 package org.talend.components.api.container;
 
-import java.time.Instant;
+import org.apache.avro.generic.IndexedRecord;
 
-import org.talend.components.api.component.runtime.transformer.TupleTag;
+import java.time.Instant;
 
 /**
  * Information accessible to all methods in this {@code DoFn}. Used primarily to output elements.
@@ -26,7 +26,7 @@ public interface ContainerTransformerContext {
      * determine what windows the element should be in, throwing an exception if the {@code WindowFn} attempts to access
      * any information about the input element. The output element will have a timestamp of negative infinity.
      */
-    public abstract void output(Object output);
+    public abstract void output(IndexedRecord output);
 
     /**
      * Adds the given element to the main output {@code PCollection}, with the given timestamp.
@@ -45,7 +45,7 @@ public interface ContainerTransformerContext {
      * determine what windows the element should be in, throwing an exception if the {@code WindowFn} attempts to access
      * any information about the input element except for the timestamp.
      */
-    public abstract void outputWithTimestamp(Object output, Instant timestamp);
+    public abstract void outputWithTimestamp(IndexedRecord output, Instant timestamp);
 
     /**
      * Adds the given element to the side output {@code PCollection} with the given tag.
@@ -54,7 +54,7 @@ public interface ContainerTransformerContext {
      * Once passed to {@code sideOutput} the element should not be modified in any way.
      *
      * <p>
-     * The caller of {@code ParDo} uses {@link ParDo#withOutputTags withOutputTags} to specify the tags of side outputs
+     * The caller of {@code ParDo} uses {@link ParDo#withIndexedRecordags withIndexedRecordags} to specify the tags of side outputs
      * that it consumes. Non-consumed side outputs, e.g., outputs for monitoring purposes only, don't necessarily need
      * to be specified.
      *
@@ -68,9 +68,9 @@ public interface ContainerTransformerContext {
      * determine what windows the element should be in, throwing an exception if the {@code WindowFn} attempts to access
      * any information about the input element. The output element will have a timestamp of negative infinity.
      *
-     * @see ParDo#withOutputTags
+     * @see ParDo#withIndexedRecordags
      */
-    public abstract void sideOutput(TupleTag tag, Object output);
+    public abstract void sideOutput(TupleTag tag, IndexedRecord output);
 
     /**
      * Adds the given element to the specified side output {@code PCollection}, with the given timestamp.
@@ -89,7 +89,7 @@ public interface ContainerTransformerContext {
      * determine what windows the element should be in, throwing an exception if the {@code WindowFn} attempts to access
      * any information about the input element except for the timestamp.
      *
-     * @see ParDo#withOutputTags
+     * @see ParDo#withIndexedRecordags
      */
-    public abstract void sideOutputWithTimestamp(TupleTag tag, Object output, Instant timestamp);
+    public abstract void sideOutputWithTimestamp(TupleTag tag, IndexedRecord output, Instant timestamp);
 }
