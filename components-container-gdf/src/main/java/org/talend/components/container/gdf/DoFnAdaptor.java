@@ -6,7 +6,9 @@ import com.google.cloud.dataflow.sdk.values.PInput;
 import com.google.cloud.dataflow.sdk.values.POutput;
 import org.talend.components.api.component.runtime.TransformerDoFn;
 
-public class DoFnAdaptor<TInput extends PCollection<?>, TOutput extends PCollection<?>> extends DoFn<TInput, TOutput> {
+import java.io.Serializable;
+
+public class DoFnAdaptor<TInput, TOutput> extends DoFn<TInput, TOutput> implements Serializable {
 
     protected TransformerDoFn transformer;
 

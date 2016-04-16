@@ -16,9 +16,6 @@
 
 package org.talend.components.api.container;
 
-import com.google.cloud.dataflow.sdk.transforms.AppliedPTransform;
-import com.google.cloud.dataflow.sdk.transforms.PTransform;
-
 /**
  * The interface for values that can be input to and output from {@link PTransform PTransforms}.
  */

@@ -13,22 +13,29 @@
 
 package org.talend.components.container.gdf.examples;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import com.google.cloud.dataflow.sdk.coders.Coder;
+import com.google.cloud.dataflow.sdk.coders.CoderException;
+import com.google.cloud.dataflow.sdk.util.CloudObject;
+import com.google.cloud.dataflow.sdk.util.common.ElementByteSizeObserver;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.talend.components.api.test.transformer.SimpleDoFnDefinition;
+import org.talend.components.container.gdf.DoFnAdaptor;
 
 import com.google.cloud.dataflow.sdk.Pipeline;
 import com.google.cloud.dataflow.sdk.coders.StringUtf8Coder;
 import com.google.cloud.dataflow.sdk.io.TextIO;
-import com.google.cloud.dataflow.sdk.options.DataflowPipelineOptions;
-import com.google.cloud.dataflow.sdk.options.Default;
-import com.google.cloud.dataflow.sdk.options.DefaultValueFactory;
 import com.google.cloud.dataflow.sdk.options.Description;
 import com.google.cloud.dataflow.sdk.options.PipelineOptions;
 import com.google.cloud.dataflow.sdk.options.PipelineOptionsFactory;
@@ -36,18 +43,12 @@ import com.google.cloud.dataflow.sdk.testing.DataflowAssert;
 import com.google.cloud.dataflow.sdk.testing.RunnableOnService;
 import com.google.cloud.dataflow.sdk.testing.TestPipeline;
 import com.google.cloud.dataflow.sdk.transforms.Create;
-import com.google.cloud.dataflow.sdk.transforms.DoFn;
 import com.google.cloud.dataflow.sdk.transforms.DoFnTester;
-import com.google.cloud.dataflow.sdk.transforms.MapElements;
 import com.google.cloud.dataflow.sdk.transforms.ParDo;
-import com.google.cloud.dataflow.sdk.util.gcsfs.GcsPath;
 import com.google.cloud.dataflow.sdk.values.PCollection;
-import com.google.cloud.dataflow.sdk.values.POutput;
-import org.talend.components.api.test.transformer.SimpleDoFnDefinition;
-import org.talend.components.container.gdf.DoFnAdaptor;
 
 /**
- * Tests of WordCount.
+ * Tests of Simple transformation
  */
 @RunWith(JUnit4.class)
 public class SimpleTest {
@@ -55,7 +56,8 @@ public class SimpleTest {
     /** Example test that tests a specific DoFn. */
     @Test
     public void testExtractWordsFn() {
-        DoFnTester<String, String> extractWordsFn = DoFnTester.of(new ExtractWordsFn());
+        DoFnTester<String, String> extractWordsFn = DoFnTester
+                .of(new DoFnAdaptor<String, String>(new SimpleDoFnDefinition().getRuntime()));
 
         Assert.assertThat(extractWordsFn.processBatch(" some  input  words "), CoreMatchers.hasItems("some", "input", "words"));
         Assert.assertThat(extractWordsFn.processBatch(" "), CoreMatchers.<String> hasItems());
@@ -77,8 +79,8 @@ public class SimpleTest {
 
         PCollection<String> input = p.apply(Create.of(WORDS).withCoder(StringUtf8Coder.of()));
 
-        PCollection<String> output = input.apply(new WordCount.CountWords())
-                .apply(MapElements.via(new WordCount.FormatAsTextFn()));
+        PCollection<String> output = input
+                .apply(ParDo.of(new DoFnAdaptor<String, String>(new SimpleDoFnDefinition().getRuntime())));
 
         DataflowAssert.that(output).containsInAnyOrder(COUNTS_ARRAY);
         p.run();
@@ -87,71 +89,22 @@ public class SimpleTest {
     public static interface WordCountOptions extends PipelineOptions {
 
         @Description("Path of the file to read from")
-        @Default.String("gs://dataflow-samples/shakespeare/kinglear.txt")
         String getInputFile();
 
         void setInputFile(String value);
 
         @Description("Path of the file to write to")
-        @Default.InstanceFactory(OutputFactory.class)
         String getOutput();
 
         void setOutput(String value);
-
-        /**
-         * Returns "gs://${YOUR_STAGING_DIRECTORY}/counts.txt" as the default destination.
-         */
-        public static class OutputFactory implements DefaultValueFactory<String> {
-
-            @Override
-            public String create(PipelineOptions options) {
-                DataflowPipelineOptions dataflowOptions = options.as(DataflowPipelineOptions.class);
-                if (dataflowOptions.getStagingLocation() != null) {
-                    return GcsPath.fromUri(dataflowOptions.getStagingLocation()).resolve("counts.txt").toString();
-                } else {
-                    throw new IllegalArgumentException("Must specify --output or --stagingLocation");
-                }
-            }
-        }
-    }
-
-    public static class Xform1 extends DoFn<String, PCollection<POutput>> {
-
-        @Override
-        public void processElement(ProcessContext processContext) throws Exception {
-
-        }
-    }
-
-    public static class Xform2 extends DoFn<String, PCollection<POutput>> {
-
-        @Override
-        public void processElement(ProcessContext processContext) throws Exception {
-
-        }
-    }
-
-    public static class Xform3 extends DoFn<String, PCollection<POutput>> {
-
-        @Override
-        public void processElement(ProcessContext processContext) throws Exception {
-
-        }
     }
 
     public static void main(String[] args) {
         WordCountOptions options = PipelineOptionsFactory.fromArgs(args).withValidation().as(WordCountOptions.class);
         Pipeline p = Pipeline.create(options);
 
-        // FIXME - trying to figure out this apply stuff.
         p.apply(TextIO.Read.named("ReadLines").from(options.getInputFile()))
-                .apply(ParDo.of(new Xform1()))
-                .apply(ParDo.of(new Xform1()))
-                .apply(ParDo.of(new Xform1()))
-                .apply(ParDo.of(new Xform1()))
-                .apply(ParDo.of(new Xform2()))
-
-                .apply(ParDo.of(new DoFnAdaptor(new SimpleDoFnDefinition().getRuntime())))
+                .apply(ParDo.of(new DoFnAdaptor<String, String>(new SimpleDoFnDefinition().getRuntime())))
                 .apply(TextIO.Write.named("WriteLines").to(options.getOutput()));
 
         p.run();

@@ -26,7 +26,7 @@ public interface ContainerTransformerContext {
      * determine what windows the element should be in, throwing an exception if the {@code WindowFn} attempts to access
      * any information about the input element. The output element will have a timestamp of negative infinity.
      */
-    public abstract void output(IndexedRecord output);
+    public <T> void output(T output);
 
     /**
      * Adds the given element to the main output {@code PCollection}, with the given timestamp.
@@ -45,7 +45,7 @@ public interface ContainerTransformerContext {
      * determine what windows the element should be in, throwing an exception if the {@code WindowFn} attempts to access
      * any information about the input element except for the timestamp.
      */
-    public abstract void outputWithTimestamp(IndexedRecord output, Instant timestamp);
+    public <T> void outputWithTimestamp(T output, Instant timestamp);
 
     /**
      * Adds the given element to the side output {@code PCollection} with the given tag.
@@ -70,7 +70,7 @@ public interface ContainerTransformerContext {
      *
      * @see ParDo#withIndexedRecordags
      */
-    public abstract void sideOutput(TupleTag tag, IndexedRecord output);
+    public <T> void sideOutput(TupleTag tag, T output);
 
     /**
      * Adds the given element to the specified side output {@code PCollection}, with the given timestamp.
@@ -91,5 +91,5 @@ public interface ContainerTransformerContext {
      *
      * @see ParDo#withIndexedRecordags
      */
-    public abstract void sideOutputWithTimestamp(TupleTag tag, IndexedRecord output, Instant timestamp);
+    public <T> void sideOutputWithTimestamp(TupleTag tag, T output, Instant timestamp);
 }

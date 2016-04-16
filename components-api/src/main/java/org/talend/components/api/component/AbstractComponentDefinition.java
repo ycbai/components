@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.components.api.component;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

@@ -18,12 +18,6 @@ package org.talend.components.api.container;
 
 import java.io.Serializable;
 
-import com.google.cloud.dataflow.sdk.coders.Coder;
-import com.google.cloud.dataflow.sdk.transforms.ParDo;
-import com.google.cloud.dataflow.sdk.transforms.View;
-import com.google.cloud.dataflow.sdk.util.WindowedValue;
-import com.google.cloud.dataflow.sdk.util.WindowingStrategy;
-
 /**
  * A {@link PCollectionView PCollectionView&lt;T&gt;} is an immutable view of a {@link PCollection}
  * as a value of type {@code T} that can be accessed
@@ -42,23 +36,5 @@ import com.google.cloud.dataflow.sdk.util.WindowingStrategy;
  * @param <T> the type of the value(s) accessible via this {@link PCollectionView}
  */
 public interface PCollectionView<T> extends PValue, Serializable {
-  /**
-   * A unique identifier, for internal use.
-   */
-  public TupleTag<Iterable<WindowedValue<?>>> getTagInternal();
 
-  /**
-   * For internal use only.
-   */
-  public T fromIterableInternal(Iterable<WindowedValue<?>> contents);
-
-  /**
-   * For internal use only.
-   */
-  public WindowingStrategy<?, ?> getWindowingStrategyInternal();
-
-  /**
-   * For internal use only.
-   */
-  public Coder<Iterable<WindowedValue<?>>> getCoderInternal();
 }

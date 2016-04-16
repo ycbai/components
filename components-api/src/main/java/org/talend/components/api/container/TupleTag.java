@@ -16,18 +16,8 @@
 
 package org.talend.components.api.container;
 
-import static com.google.cloud.dataflow.sdk.util.Structs.addBoolean;
-import static com.google.cloud.dataflow.sdk.util.Structs.addString;
-
 import java.io.Serializable;
 import java.util.Random;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.cloud.dataflow.sdk.util.CloudObject;
-import com.google.cloud.dataflow.sdk.util.PropertyNames;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
 
 /**
  * A {@link TupleTag} is a typed tag to use as the key of a
@@ -103,24 +93,12 @@ public class TupleTag<V> implements Serializable {
     }
   }
 
-  /**
-   * Returns a {@code TypeDescriptor} capturing what is known statically
-   * about the type of this {@code TupleTag} instance's most-derived
-   * class.
-   *
-   * <p>This is useful for a {@code TupleTag} constructed as an
-   * instance of an anonymous subclass with a trailing {@code {}},
-   * e.g., {@code new TupleTag<SomeType>(){}}.
-   */
-  public TypeDescriptor<V> getTypeDescriptor() {
-    return new TypeDescriptor<V>(getClass()) {};
-  }
-
   /////////////////////////////////////////////////////////////////////////////
   // Internal details below here.
 
   static final Random RANDOM = new Random(0);
-  private static final Multiset<String> staticInits = HashMultiset.create();
+  // FIXME
+  //private static final Multiset<String> staticInits = HashMultiset.create();
 
   final String id;
   final boolean generated;
@@ -137,12 +115,12 @@ public class TupleTag<V> implements Serializable {
     // and class initialization order is well defined by the JVM spec, so in
     // this case we can assign deterministic ids.
     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-    for (StackTraceElement frame : stackTrace) {
-      if (frame.getMethodName().equals("<clinit>")) {
-        int counter = staticInits.add(frame.getClassName(), 1);
-        return frame.getClassName() + "#" + counter;
-      }
-    }
+//    for (StackTraceElement frame : stackTrace) {
+//      if (frame.getMethodName().equals("<clinit>")) {
+//        int counter = staticInits.add(frame.getClassName(), 1);
+//        return frame.getClassName() + "#" + counter;
+//      }
+//    }
     // Otherwise, assume it'll be serialized and choose a random value to reduce
     // the chance of collision.
     String nonce = Long.toHexString(RANDOM.nextLong());
@@ -154,24 +132,10 @@ public class TupleTag<V> implements Serializable {
     return caller + "#" + nonce;
   }
 
-  @JsonCreator
-  @SuppressWarnings("unused")
-  private static TupleTag<?> fromJson(
-      @JsonProperty(PropertyNames.VALUE) String id,
-      @JsonProperty(PropertyNames.IS_GENERATED) boolean generated) {
-    return new TupleTag<>(id, generated);
-  }
 
   private TupleTag(String id, boolean generated) {
     this.id = id;
     this.generated = generated;
-  }
-
-  public CloudObject asCloudObject() {
-    CloudObject result = CloudObject.forClass(getClass());
-    addString(result, PropertyNames.VALUE, id);
-    addBoolean(result, PropertyNames.IS_GENERATED, generated);
-    return result;
   }
 
   @Override

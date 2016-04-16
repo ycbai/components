@@ -17,7 +17,7 @@ public interface ContainerTransformerProcessContext extends ContainerTransformer
      * cache, etc. The element should not be mutated by any of the {@link DoFn} methods, because it may be cached
      * elsewhere, retained by the Dataflow runtime, or used in other unspecified ways.
      */
-    public abstract IndexedRecord element();
+    public <T> T element();
 
     /**
      * Returns the value of the side input for the window corresponding to the window of the main input element.
@@ -29,7 +29,8 @@ public interface ContainerTransformerProcessContext extends ContainerTransformer
      * @throws IllegalArgumentException if this is not a side input
      * @see ParDo#withSideInputs
      */
-    public abstract <T> T sideInput(PCollectionView<T> view);
+    // FIXME - how is the transformer going to get the view?
+    public <T> T sideInput(PCollectionView<T> view);
 
     /**
      * Returns the timestamp of the input element.
@@ -37,7 +38,7 @@ public interface ContainerTransformerProcessContext extends ContainerTransformer
      * <p>
      * See {@link com.google.cloud.dataflow.sdk.transforms.windowing.Window} for more information.
      */
-    public abstract Instant timestamp();
+    public Instant timestamp();
 
     /**
      * Returns the window into which the input element has been assigned.
@@ -47,7 +48,7 @@ public interface ContainerTransformerProcessContext extends ContainerTransformer
      *
      * @throws UnsupportedOperationException if this {@link DoFn} does not implement {@link RequiresWindowAccess}.
      */
-    public abstract BoundedWindow window();
+    public BoundedWindow window();
 
     /**
      * Returns information about the pane within this window into which the input element has been assigned.
@@ -56,6 +57,6 @@ public interface ContainerTransformerProcessContext extends ContainerTransformer
      * Generally all data is in a single, uninteresting pane unless custom triggering and/or late data has been
      * explicitly requested. See {@link com.google.cloud.dataflow.sdk.transforms.windowing.Window} for more information.
      */
-    public abstract PaneInfo pane();
+    public PaneInfo pane();
 
 }

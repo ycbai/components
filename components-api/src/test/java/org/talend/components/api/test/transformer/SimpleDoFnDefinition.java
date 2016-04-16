@@ -30,8 +30,10 @@ import org.talend.components.api.properties.ComponentProperties;
 
 import aQute.bnd.annotation.component.Component;
 
+import java.io.Serializable;
+
 @Component(name = Constants.COMPONENT_BEAN_PREFIX + SimpleDoFnDefinition.COMPONENT_NAME, provide = ComponentDefinition.class)
-public class SimpleDoFnDefinition extends AbstractComponentDefinition implements TransformerDoFnComponentDefinition {
+public class SimpleDoFnDefinition extends AbstractComponentDefinition implements TransformerDoFnComponentDefinition, Serializable {
 
     public static final String COMPONENT_NAME = "SimpleDoFn"; //$NON-NLS-1$
 
@@ -73,13 +75,8 @@ public class SimpleDoFnDefinition extends AbstractComponentDefinition implements
 
             @Override
             public void processElement(ContainerTransformerProcessContext c) throws Exception {
-                IndexedRecord input = c.element();
-
-                GenericRecordBuilder builder = new GenericRecordBuilder(input.getSchema());
-                IndexedRecord output = builder.build();
-                if (input.get(0) instanceof String)
-                    output.put(0, ((String)input.get(0)) + "-transformed");
-                c.output(output);
+                String input = c.element();
+                c.output(input + "-transformed");
             }
         };
     }
