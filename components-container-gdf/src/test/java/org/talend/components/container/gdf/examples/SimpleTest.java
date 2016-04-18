@@ -53,40 +53,21 @@ import com.google.cloud.dataflow.sdk.values.PCollection;
 @RunWith(JUnit4.class)
 public class SimpleTest {
 
-    /** Example test that tests a specific DoFn. */
-    @Test
-    public void testExtractWordsFn() {
-        DoFnTester<String, String> extractWordsFn = DoFnTester
-                .of(new DoFnAdaptor<String, String>(new SimpleDoFnDefinition().getRuntime()));
-
-        Assert.assertThat(extractWordsFn.processBatch(" some  input  words "), CoreMatchers.hasItems("some", "input", "words"));
-        Assert.assertThat(extractWordsFn.processBatch(" "), CoreMatchers.<String> hasItems());
-        Assert.assertThat(extractWordsFn.processBatch(" some ", " input", " words"),
-                CoreMatchers.hasItems("some", "input", "words"));
-    }
-
-    static final String[] WORDS_ARRAY = new String[] { "hi there", "hi", "hi sue bob", "hi sue", "", "bob hi" };
-
-    static final List<String> WORDS = Arrays.asList(WORDS_ARRAY);
-
-    static final String[] COUNTS_ARRAY = new String[] { "hi: 5", "there: 1", "sue: 2", "bob: 2" };
-
-    /** Example test that tests a PTransform by using an in-memory input and inspecting the output. */
     @Test
     @Category(RunnableOnService.class)
-    public void testCountWords() throws Exception {
+    public void testSimple() throws Exception {
         Pipeline p = TestPipeline.create();
 
-        PCollection<String> input = p.apply(Create.of(WORDS).withCoder(StringUtf8Coder.of()));
+        PCollection<String> input = p.apply(Create.of("input").withCoder(StringUtf8Coder.of()));
 
         PCollection<String> output = input
                 .apply(ParDo.of(new DoFnAdaptor<String, String>(new SimpleDoFnDefinition().getRuntime())));
 
-        DataflowAssert.that(output).containsInAnyOrder(COUNTS_ARRAY);
+        DataflowAssert.that(output).containsInAnyOrder("input-transformed");
         p.run();
     }
 
-    public static interface WordCountOptions extends PipelineOptions {
+    public static interface SimpleOptions extends PipelineOptions {
 
         @Description("Path of the file to read from")
         String getInputFile();
@@ -100,7 +81,7 @@ public class SimpleTest {
     }
 
     public static void main(String[] args) {
-        WordCountOptions options = PipelineOptionsFactory.fromArgs(args).withValidation().as(WordCountOptions.class);
+        SimpleOptions options = PipelineOptionsFactory.fromArgs(args).withValidation().as(SimpleOptions.class);
         Pipeline p = Pipeline.create(options);
 
         p.apply(TextIO.Read.named("ReadLines").from(options.getInputFile()))
