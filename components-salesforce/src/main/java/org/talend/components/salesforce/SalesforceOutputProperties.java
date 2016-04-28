@@ -12,15 +12,6 @@
 // ============================================================================
 package org.talend.components.salesforce;
 
-import static org.talend.daikon.properties.PropertyFactory.*;
-import static org.talend.daikon.properties.presentation.Widget.*;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.talend.components.api.component.Connector;
@@ -31,6 +22,11 @@ import org.talend.daikon.properties.Property;
 import org.talend.daikon.properties.ValidationResult;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
+
+import java.util.*;
+
+import static org.talend.daikon.properties.PropertyFactory.*;
+import static org.talend.daikon.properties.presentation.Widget.widget;
 
 public class SalesforceOutputProperties extends SalesforceConnectionModuleProperties {
 
@@ -56,8 +52,8 @@ public class SalesforceOutputProperties extends SalesforceConnectionModuleProper
     //
     // Advanced
     //
-    public Property upsertRelation = newProperty("upsertRelation").setOccurMaxTimes(Property.INFINITE); //$NON-NLS-1$
-
+//    public Property upsertRelation = newProperty("upsertRelation").setOccurMaxTimes(Property.INFINITE); //$NON-NLS-1$
+    public UpsertRelationTable upsertRelationTable = new UpsertRelationTable("upsertRelationTable");
     //
     // Collections
     //
@@ -88,24 +84,25 @@ public class SalesforceOutputProperties extends SalesforceConnectionModuleProper
             }
             // FIXME - we probably only want the names, not the Schema.Field
             upsertKeyColumn.setPossibleValues(fieldNames);
-            upsertRelation.getChild("columnName").setPossibleValues(fieldNames);
+//            upsertRelation.getChild("columnName").setPossibleValues(fieldNames);
+            upsertRelationTable.columnName.setPossibleValues(fieldNames);
             return validationResult;
         }
     }
 
     public static final boolean POLY = true;
 
-    public static void setupUpsertRelation(Property ur, boolean poly) {
-        // They might have been set previously in some inheritance cases
-        ur.setChildren(new ArrayList<Property>());
-        ur.addChild(newProperty("columnName")); //$NON-NLS-1$
-        ur.addChild(newProperty("lookupFieldName")); //$NON-NLS-1$
-        ur.addChild(newProperty("lookupFieldModuleName")); //$NON-NLS-1$
-        if (poly) {
-            ur.addChild(newProperty(Property.Type.BOOLEAN, "polymorphic")); //$NON-NLS-1$
-        }
-        ur.addChild(newProperty("lookupFieldExternalIdName")); //$NON-NLS-1$
-    }
+//    public static void setupUpsertRelation(Property ur, boolean poly) {
+//        // They might have been set previously in some inheritance cases
+//        ur.setChildren(new ArrayList<Property>());
+//        ur.addChild(newProperty("columnName")); //$NON-NLS-1$
+//        ur.addChild(newProperty("lookupFieldName")); //$NON-NLS-1$
+//        ur.addChild(newProperty("lookupFieldModuleName")); //$NON-NLS-1$
+//        if (poly) {
+//            ur.addChild(newProperty(Property.Type.BOOLEAN, "polymorphic")); //$NON-NLS-1$
+//        }
+//        ur.addChild(newProperty("lookupFieldExternalIdName")); //$NON-NLS-1$
+//    }
 
     @Override
     public void setupProperties() {
@@ -122,7 +119,7 @@ public class SalesforceOutputProperties extends SalesforceConnectionModuleProper
                 .type().stringType().noDefault().name("errorMessage").type().stringType().noDefault().endRecord();
         schemaReject.schema.setValue(s);
 
-        setupUpsertRelation(upsertRelation, !POLY);
+//        setupUpsertRelation(upsertRelation, !POLY);
 
         module = new ModuleSubclass("module");
         module.connection = connection;
@@ -137,10 +134,11 @@ public class SalesforceOutputProperties extends SalesforceConnectionModuleProper
         mainForm.addColumn(upsertKeyColumn);
 
         Form advancedForm = getForm(Form.ADVANCED);
-        advancedForm.addRow(widget(upsertRelation).setWidgetType(Widget.WidgetType.TABLE));
+//        advancedForm.addRow(widget(upsertRelation).setWidgetType(Widget.WidgetType.TABLE));
+        advancedForm.addRow(widget(upsertRelationTable).setWidgetType(Widget.WidgetType.TABLE));
         advancedForm.addRow(widget(schemaReject.getForm(Form.REFERENCE).setName("SchemaReject").setTitle("Schema Reject")));// TODO
-                                                                                                                            // check
-                                                                                                                            // I18N
+        // check
+        // I18N
     }
 
     public void afterOutputAction() {
