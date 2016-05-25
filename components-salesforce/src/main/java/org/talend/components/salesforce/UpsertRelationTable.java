@@ -10,6 +10,8 @@ public class UpsertRelationTable extends ComponentProperties {
 
     private boolean usePolymorphic;
 
+    private boolean useLookupFieldName;
+
     /**
      * named constructor to be used is these properties are nested in other properties. Do not subclass this method for
      * initialization, use {@link #init()} instead.
@@ -24,6 +26,8 @@ public class UpsertRelationTable extends ComponentProperties {
 
     public Property lookupFieldName = newString("lookupFieldName");
 
+    public Property lookupRelationshipFieldName = newString("lookupRelationshipFieldName");
+
     public Property lookupFieldModuleName = newString("lookupFieldModuleName");
 
     public Property lookupFieldExternalIdName = newString("lookupFieldExternalIdName");
@@ -35,7 +39,10 @@ public class UpsertRelationTable extends ComponentProperties {
         super.setupLayout();
         Form mainForm = Form.create(this, Form.MAIN);
         mainForm.addColumn(columnName);
-        mainForm.addColumn(lookupFieldName);
+        if (useLookupFieldName) {
+            mainForm.addColumn(lookupFieldName);
+        }
+        mainForm.addColumn(lookupRelationshipFieldName);
         mainForm.addColumn(lookupFieldModuleName);
         if (usePolymorphic) {
             mainForm.addColumn(polymorphic);
@@ -43,21 +50,39 @@ public class UpsertRelationTable extends ComponentProperties {
         mainForm.addColumn(lookupFieldExternalIdName);
     }
 
-    
+    @Override
+    public void refreshLayout(Form form) {
+        super.refreshLayout(form);
+        if (form != null && Form.MAIN.equals(form.getName())) {
+            if (form.getWidget(lookupFieldName.getName()) != null) {
+                form.getWidget(lookupFieldName.getName()).setHidden(!useLookupFieldName);
+            }
+        }
+    }
+
     /**
      * Getter for usePolymorphic.
+     * 
      * @return the usePolymorphic
      */
     public boolean isUsePolymorphic() {
         return this.usePolymorphic;
     }
 
-    
     /**
      * Sets the usePolymorphic.
+     * 
      * @param usePolymorphic the usePolymorphic to set
      */
     public void setUsePolymorphic(boolean usePolymorphic) {
         this.usePolymorphic = usePolymorphic;
+    }
+
+    public boolean isUseLookupFieldName() {
+        return useLookupFieldName;
+    }
+
+    public void setUseLookupFieldName(boolean useLookupFieldName) {
+        this.useLookupFieldName = useLookupFieldName;
     }
 }

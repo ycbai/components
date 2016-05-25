@@ -54,6 +54,7 @@ public class TSalesforceOutputProperties extends SalesforceOutputProperties {
     @Override
     public void setupProperties() {
         super.setupProperties();
+        upsertRelationTable.setUseLookupFieldName(true);
         upsertKeyColumn.setType(Property.Type.ENUM);
 
         module.setSchemaListener(new ISchemaListener() {
@@ -74,17 +75,17 @@ public class TSalesforceOutputProperties extends SalesforceOutputProperties {
                 && ACTION_INSERT.equals(outputAction.getValue())) {
 
             Schema mainOutputSchema = createRecordBuilderFromSchema(inputSchema, "output").name("salesforce_id")
-                        .prop(Talend6SchemaConstants.TALEND6_COLUMN_CUSTOM, "true")//$NON-NLS-1$
-                        .prop(SchemaConstants.TALEND_IS_LOCKED, "false")//$NON-NLS-1$
-                        .prop(SchemaConstants.TALEND_COLUMN_DB_LENGTH, "255")//$NON-NLS-1$
-                        .type().stringType().noDefault().endRecord();
+                    .prop(Talend6SchemaConstants.TALEND6_COLUMN_CUSTOM, "true")//$NON-NLS-1$
+                    .prop(SchemaConstants.TALEND_IS_LOCKED, "false")//$NON-NLS-1$
+                    .prop(SchemaConstants.TALEND_COLUMN_DB_LENGTH, "255")//$NON-NLS-1$
+                    .type().stringType().noDefault().endRecord();
 
             schemaFlow.schema.setValue(mainOutputSchema);
         } else {
             schemaFlow.schema.setValue(inputSchema);
         }
 
-        Schema rejectSchema = createRecordBuilderFromSchema(inputSchema, "rejectOutput").name("errorCode") //$NON-NLS-1$  //$NON-NLS-2$
+        Schema rejectSchema = createRecordBuilderFromSchema(inputSchema, "rejectOutput").name("errorCode") //$NON-NLS-1$ //$NON-NLS-2$
                 .prop(Talend6SchemaConstants.TALEND6_COLUMN_CUSTOM, "true")//$NON-NLS-1$
                 // column set as non-read-only, to let the user edit the field if needed
                 .prop(SchemaConstants.TALEND_IS_LOCKED, "false")//$NON-NLS-1$
@@ -101,7 +102,7 @@ public class TSalesforceOutputProperties extends SalesforceOutputProperties {
 
         schemaReject.schema.setValue(rejectSchema);
     }
-    
+
     private FieldAssembler<Schema> createRecordBuilderFromSchema(Schema inputSchema, String newSchemaName) {
         RecordBuilder<Schema> recordBuilder = SchemaBuilder.record(newSchemaName);
         FieldAssembler<Schema> fieldAssembler = recordBuilder.fields();
@@ -138,6 +139,10 @@ public class TSalesforceOutputProperties extends SalesforceOutputProperties {
         updateOutputSchemas();
     }
 
+    public void afterIgnoreNull() {
+        refreshLayout(getForm(Form.ADVANCED));
+    }
+
     @Override
     public void refreshLayout(Form form) {
         super.refreshLayout(form);
@@ -147,10 +152,13 @@ public class TSalesforceOutputProperties extends SalesforceOutputProperties {
             form.getChildForm(connection.getName()).getWidget(connection.bulkConnection.getName()).setHidden(true);
             form.getChildForm(connection.getName()).getWidget(connection.httpTraceMessage.getName()).setHidden(true);
             form.getWidget("commitLevel").setHidden(!extendInsert.getBooleanValue());
-            form.getWidget("retrieveInsertId").setHidden(
-                    extendInsert.getBooleanValue() && ACTION_INSERT.equals(outputAction.getValue()));
-            form.getWidget("ignoreNull").setHidden(
-                    !ACTION_UPDATE.equals(outputAction.getValue()) || ACTION_UPSERT.equals(outputAction.getValue()));
+            form.getWidget("retrieveInsertId")
+                    .setHidden(extendInsert.getBooleanValue() || !ACTION_INSERT.equals(outputAction.getValue()));
+            form.getWidget("ignoreNull")
+                    .setHidden(ACTION_INSERT.equals(outputAction.getValue()) || ACTION_DELETE.equals(outputAction.getValue()));
+            upsertRelationTable.setUseLookupFieldName(!ignoreNull.getBooleanValue());
+            upsertRelationTable.refreshLayout(upsertRelationTable.getForm(Form.MAIN));
+
         }
     }
 

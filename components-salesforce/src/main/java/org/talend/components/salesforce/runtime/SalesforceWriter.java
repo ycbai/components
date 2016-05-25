@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.sforce.ws.bind.XmlObject;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
 import org.talend.components.api.component.runtime.WriteOperation;
@@ -33,13 +32,11 @@ import org.talend.components.salesforce.tsalesforceoutput.TSalesforceOutputPrope
 import org.talend.daikon.avro.IndexedRecordAdapterFactory;
 import org.talend.daikon.avro.util.AvroUtils;
 
-import com.sforce.soap.partner.DeleteResult;
+import com.sforce.soap.partner.*;
 import com.sforce.soap.partner.Error;
-import com.sforce.soap.partner.PartnerConnection;
-import com.sforce.soap.partner.SaveResult;
-import com.sforce.soap.partner.UpsertResult;
 import com.sforce.soap.partner.sobject.SObject;
 import com.sforce.ws.ConnectionException;
+import com.sforce.ws.bind.XmlObject;
 
 final class SalesforceWriter implements Writer<WriterResult> {
 
@@ -124,6 +121,7 @@ final class SalesforceWriter implements Writer<WriterResult> {
         IndexedRecord input = factory.convertToAvro(datum);
 
         if (!TSalesforceOutputProperties.ACTION_DELETE.equals(sprops.outputAction.getValue())) {
+            List<String> fieldsToNull = null;
             SObject so = new SObject();
             so.setType(sprops.module.moduleName.getStringValue());
             Map<String, Map<String, String>> referenceFieldsMap = null;
@@ -131,37 +129,58 @@ final class SalesforceWriter implements Writer<WriterResult> {
             if (isUpsert) {
                 referenceFieldsMap = getReferenceFieldsMap();
             }
+            if (!sprops.ignoreNull.getBooleanValue()) {
+                fieldsToNull = new ArrayList<>();
+            }
             for (Schema.Field f : input.getSchema().getFields()) {
-                Object value = input.get(f.pos());
-                if (value != null) {
-                    Schema.Field se = schema.getField(f.name());
-                    if (se != null) {
+                Schema.Field se = schema.getField(f.name());
+                if (se != null) {
+                    Object value = input.get(f.pos());
+                    if (value != null) {
                         if (isUpsert && referenceFieldsMap != null && referenceFieldsMap.get(se.name()) != null) {
                             Map<String, String> relationMap = referenceFieldsMap.get(se.name());
-                            String lookupFieldName = relationMap.get("lookupFieldName");
-                            so.setField(lookupFieldName, null);
-                            so.getChild(lookupFieldName).setField("type", relationMap.get("lookupFieldModuleName"));
-                            addSObjectField(so.getChild(lookupFieldName), se.schema().getType(), relationMap.get("lookupFieldExternalIdName"), value);
+                            String lookupRelationshipFieldName = relationMap.get("lookupRelationshipFieldName");
+                            so.setField(lookupRelationshipFieldName, null);
+                            so.getChild(lookupRelationshipFieldName).setField("type", relationMap.get("lookupFieldModuleName"));
+                            addSObjectField(so.getChild(lookupRelationshipFieldName), se.schema().getType(),
+                                    relationMap.get("lookupFieldExternalIdName"), value);
                         } else {
                             addSObjectField(so, se.schema().getType(), se.name(), value);
+                        }
+                    } else {
+                        if (fieldsToNull != null) {
+                            if (isUpsert && referenceFieldsMap != null && referenceFieldsMap.get(se.name()) != null) {
+                                Map<String, String> relationMap = referenceFieldsMap.get(se.name());
+                                String lookupFieldName = relationMap.get("lookupFieldName");
+                                if (lookupFieldName != null && lookupFieldName.trim().length() > 0) {
+                                    fieldsToNull.add(lookupFieldName);
+                                }
+                            } else {
+                                fieldsToNull.add(se.name());
+                            }
                         }
                     }
                 }
             }
+            if (!TSalesforceOutputProperties.ACTION_INSERT.equals(sprops.outputAction.getValue())) {
+                if (fieldsToNull != null && fieldsToNull.size() > 0) {
+                    so.setFieldsToNull(fieldsToNull.toArray(new String[0]));
+                }
+            }
 
             switch (TSalesforceOutputProperties.OutputAction.valueOf(sprops.outputAction.getStringValue())) {
-                case INSERT:
-                    insert(so);
-                    break;
-                case UPDATE:
-                    update(so);
-                    break;
-                case UPSERT:
-                    upsert(so);
-                    break;
-                case DELETE:
-                    // See below
-                    throw new RuntimeException("Impossible");
+            case INSERT:
+                insert(so);
+                break;
+            case UPDATE:
+                update(so);
+                break;
+            case UPSERT:
+                upsert(so);
+                break;
+            case DELETE:
+                // See below
+                throw new RuntimeException("Impossible");
             }
         } else { // DELETE
             String id = getIdValue(input);
@@ -184,16 +203,16 @@ final class SalesforceWriter implements Writer<WriterResult> {
         Object valueToAdd = null;
         // Convert stuff here
         switch (expected) {
-            case BYTES:
-                valueToAdd = Charset.defaultCharset().decode(ByteBuffer.wrap((byte[]) value)).toString();
-                break;
-            // case DATE:
-            // case DATETIME:
-            // valueToAdd = container.formatDate((Date) value, se.getPattern());
-            // break;
-            default:
-                valueToAdd = value;
-                break;
+        case BYTES:
+            valueToAdd = Charset.defaultCharset().decode(ByteBuffer.wrap((byte[]) value)).toString();
+            break;
+        // case DATE:
+        // case DATETIME:
+        // valueToAdd = container.formatDate((Date) value, se.getPattern());
+        // break;
+        default:
+            valueToAdd = value;
+            break;
         }
         xmlObject.setField(fieldName, valueToAdd);
     }
@@ -297,7 +316,7 @@ final class SalesforceWriter implements Writer<WriterResult> {
 
     protected void handleResults(boolean success, Error[] resultErrors, String[] changedItemKeys, int batchIdx)
             throws IOException {
-        //StringBuilder errors = new StringBuilder("");
+        // StringBuilder errors = new StringBuilder("");
 
         Map<String, Object> resultMessage = new HashMap<String, Object>();
 
@@ -305,7 +324,8 @@ final class SalesforceWriter implements Writer<WriterResult> {
             successCount++;
             // TODO: send back the ID
         } else {
-            //TODO now we use batch mode for commit the data to salesforce, but the batch size is 1 at any time, so the code is ok now, but we need fix it.
+            // TODO now we use batch mode for commit the data to salesforce, but the batch size is 1 at any time, so the code is
+            // ok now, but we need fix it.
             rejectCount++;
             for (Error error : resultErrors) {
                 if (error.getStatusCode() != null) {
@@ -328,16 +348,16 @@ final class SalesforceWriter implements Writer<WriterResult> {
             throw new DataRejectException(resultMessage);
 
             /*
-            errors = SalesforceRuntime.addLog(resultErrors,
-            	batchIdx < changedItemKeys.length ? changedItemKeys[batchIdx] : "Batch index out of bounds", null);
-            */
+             * errors = SalesforceRuntime.addLog(resultErrors,
+             * batchIdx < changedItemKeys.length ? changedItemKeys[batchIdx] : "Batch index out of bounds", null);
+             */
         }
 
         /*
-        if (exceptionForErrors && errors.toString().length() > 0) {
-            throw new IOException(errors.toString());
-        }
-        */
+         * if (exceptionForErrors && errors.toString().length() > 0) {
+         * throw new IOException(errors.toString());
+         * }
+         */
 
     }
 
@@ -382,7 +402,8 @@ final class SalesforceWriter implements Writer<WriterResult> {
         // handled by Beam.
         if (container != null) {
             container.setComponentData(container.getCurrentComponentId(), SalesforceOutputProperties.NB_LINE_NAME, dataCount);
-            container.setComponentData(container.getCurrentComponentId(), SalesforceOutputProperties.NB_SUCCESS_NAME, successCount);
+            container.setComponentData(container.getCurrentComponentId(), SalesforceOutputProperties.NB_SUCCESS_NAME,
+                    successCount);
             container.setComponentData(container.getCurrentComponentId(), SalesforceOutputProperties.NB_REJECT_NAME, rejectCount);
         }
         return new WriterResult(uId, dataCount);
@@ -409,11 +430,17 @@ final class SalesforceWriter implements Writer<WriterResult> {
             List<String> columns = (List<String>) value;
             List<String> lookupFieldModuleNames = (List<String>) sprops.upsertRelationTable.lookupFieldModuleName.getValue();
             List<String> lookupFieldNames = (List<String>) sprops.upsertRelationTable.lookupFieldName.getValue();
-            List<String> externalIdFromLookupFields = (List<String>) sprops.upsertRelationTable.lookupFieldExternalIdName.getValue();
+            List<String> lookupRelationshipFieldNames = (List<String>) sprops.upsertRelationTable.lookupRelationshipFieldName
+                    .getValue();
+            List<String> externalIdFromLookupFields = (List<String>) sprops.upsertRelationTable.lookupFieldExternalIdName
+                    .getValue();
             for (int index = 0; index < columns.size(); index++) {
                 Map<String, String> relationMap = new HashMap<>();
                 relationMap.put("lookupFieldModuleName", lookupFieldModuleNames.get(index));
-                relationMap.put("lookupFieldName", lookupFieldNames.get(index));
+                if (sprops.upsertRelationTable.isUseLookupFieldName() && lookupFieldNames != null) {
+                    relationMap.put("lookupFieldName", lookupFieldNames.get(index));
+                }
+                relationMap.put("lookupRelationshipFieldName", lookupRelationshipFieldNames.get(index));
                 relationMap.put("lookupFieldExternalIdName", externalIdFromLookupFields.get(index));
                 referenceFieldsMap.put(columns.get(index), relationMap);
             }
