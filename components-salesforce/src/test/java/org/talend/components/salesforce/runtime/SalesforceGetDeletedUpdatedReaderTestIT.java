@@ -12,7 +12,8 @@
 // ============================================================================
 package org.talend.components.salesforce.runtime;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -178,6 +179,7 @@ public class SalesforceGetDeletedUpdatedReaderTestIT extends SalesforceTestBase 
         TSalesforceOutputProperties outputProps = new TSalesforceOutputProperties("output"); //$NON-NLS-1$
         outputProps.copyValuesFrom(props);
         outputProps.outputAction.setValue(action);
+        outputProps.ignoreNull.setValue(true);
         doWriteRows(outputProps, outputRows);
         List<IndexedRecord> inputRows = readRows(props);
         return checkRows(random, inputRows, outputRows.size());

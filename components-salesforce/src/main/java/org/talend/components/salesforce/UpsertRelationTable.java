@@ -1,12 +1,27 @@
 package org.talend.components.salesforce;
 
-import static org.talend.daikon.properties.PropertyFactory.*;
+import static org.talend.daikon.properties.PropertyFactory.newProperty;
 
+import java.util.List;
+
+import org.apache.commons.lang3.reflect.TypeLiteral;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.daikon.properties.Property;
 import org.talend.daikon.properties.presentation.Form;
 
 public class UpsertRelationTable extends ComponentProperties {
+
+    /**
+     * 
+     */
+    private static final TypeLiteral<List<String>> LIST_STRING_TYPE = new TypeLiteral<List<String>>() {// empty
+    };
+
+    /**
+     * 
+     */
+    private static final TypeLiteral<List<Boolean>> LIST_BOOLEAN_TYPE = new TypeLiteral<List<Boolean>>() {// empty
+    };
 
     private boolean usePolymorphic;
 
@@ -22,22 +37,22 @@ public class UpsertRelationTable extends ComponentProperties {
         super(name);
     }
 
-    public Property columnName = newEnum("columnName");
+    public Property<List<String>> columnName = newProperty(LIST_STRING_TYPE, "columnName");
 
-    public Property lookupFieldName = newString("lookupFieldName");
+    public Property<List<String>> lookupFieldName = newProperty(LIST_STRING_TYPE, "lookupFieldName");
 
-    public Property lookupRelationshipFieldName = newString("lookupRelationshipFieldName");
+    public Property lookupRelationshipFieldName = newProperty(LIST_STRING_TYPE, "lookupRelationshipFieldName");
 
-    public Property lookupFieldModuleName = newString("lookupFieldModuleName");
+    public Property<List<String>> lookupFieldModuleName = newProperty(LIST_STRING_TYPE, "lookupFieldModuleName");
 
-    public Property lookupFieldExternalIdName = newString("lookupFieldExternalIdName");
+    public Property<List<String>> lookupFieldExternalIdName = newProperty(LIST_STRING_TYPE, "lookupFieldExternalIdName");
 
-    public Property polymorphic = newProperty(Property.Type.BOOLEAN, "polymorphic");
+    public Property<List<Boolean>> polymorphic = newProperty(LIST_BOOLEAN_TYPE, "polymorphic");
 
     @Override
     public void setupLayout() {
         super.setupLayout();
-        Form mainForm = Form.create(this, Form.MAIN);
+        Form mainForm = new Form(this, Form.MAIN);
         mainForm.addColumn(columnName);
         if (useLookupFieldName) {
             mainForm.addColumn(lookupFieldName);

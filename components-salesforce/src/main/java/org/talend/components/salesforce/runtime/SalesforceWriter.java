@@ -96,7 +96,7 @@ final class SalesforceWriter implements Writer<WriterResult> {
         this.uId = uId;
         connection = sink.connect(container).connection;
         if (null == schema) {
-            schema = (Schema) sprops.module.main.schema.getValue();
+            schema = sprops.module.main.schema.getValue();
             if (AvroUtils.isIncludeAllFields(schema)) {
                 schema = sink.getSchema(connection, sprops.module.moduleName.getStringValue());
             } // else schema is fully specified
@@ -120,16 +120,16 @@ final class SalesforceWriter implements Writer<WriterResult> {
         }
         IndexedRecord input = factory.convertToAvro(datum);
 
-        if (!TSalesforceOutputProperties.ACTION_DELETE.equals(sprops.outputAction.getValue())) {
+        if (!TSalesforceOutputProperties.OutputAction.DELETE.equals(sprops.outputAction.getValue())) {
             List<String> fieldsToNull = null;
             SObject so = new SObject();
             so.setType(sprops.module.moduleName.getStringValue());
             Map<String, Map<String, String>> referenceFieldsMap = null;
-            boolean isUpsert = SalesforceOutputProperties.ACTION_UPSERT.equals(sprops.outputAction.getStringValue());
+            boolean isUpsert = SalesforceOutputProperties.OutputAction.UPSERT.equals(sprops.outputAction.getValue());
             if (isUpsert) {
                 referenceFieldsMap = getReferenceFieldsMap();
             }
-            if (!sprops.ignoreNull.getBooleanValue()) {
+            if (!sprops.ignoreNull.getValue()) {
                 fieldsToNull = new ArrayList<>();
             }
             for (Schema.Field f : input.getSchema().getFields()) {
@@ -162,13 +162,13 @@ final class SalesforceWriter implements Writer<WriterResult> {
                     }
                 }
             }
-            if (!TSalesforceOutputProperties.ACTION_INSERT.equals(sprops.outputAction.getValue())) {
+            if (!TSalesforceOutputProperties.OutputAction.INSERT.equals(sprops.outputAction.getValue())) {
                 if (fieldsToNull != null && fieldsToNull.size() > 0) {
                     so.setFieldsToNull(fieldsToNull.toArray(new String[0]));
                 }
             }
 
-            switch (TSalesforceOutputProperties.OutputAction.valueOf(sprops.outputAction.getStringValue())) {
+            switch (sprops.outputAction.getValue()) {
             case INSERT:
                 insert(so);
                 break;
@@ -324,8 +324,8 @@ final class SalesforceWriter implements Writer<WriterResult> {
             successCount++;
             // TODO: send back the ID
         } else {
-            // TODO now we use batch mode for commit the data to salesforce, but the batch size is 1 at any time, so the code is
-            // ok now, but we need fix it.
+            // TODO now we use batch mode for commit the data to salesforce, but the batch size is 1 at any time, so the
+            // code is ok now, but we need fix it.
             rejectCount++;
             for (Error error : resultErrors) {
                 if (error.getStatusCode() != null) {
@@ -348,15 +348,13 @@ final class SalesforceWriter implements Writer<WriterResult> {
             throw new DataRejectException(resultMessage);
 
             /*
-             * errors = SalesforceRuntime.addLog(resultErrors,
-             * batchIdx < changedItemKeys.length ? changedItemKeys[batchIdx] : "Batch index out of bounds", null);
+             * errors = SalesforceRuntime.addLog(resultErrors, batchIdx < changedItemKeys.length ?
+             * changedItemKeys[batchIdx] : "Batch index out of bounds", null);
              */
         }
 
         /*
-         * if (exceptionForErrors && errors.toString().length() > 0) {
-         * throw new IOException(errors.toString());
-         * }
+         * if (exceptionForErrors && errors.toString().length() > 0) { throw new IOException(errors.toString()); }
          */
 
     }
