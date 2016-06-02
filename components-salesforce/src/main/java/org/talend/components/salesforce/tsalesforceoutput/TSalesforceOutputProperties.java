@@ -56,10 +56,8 @@ public class TSalesforceOutputProperties extends SalesforceOutputProperties {
     @Override
     public void setupProperties() {
         super.setupProperties();
-        // TODO, chack why this was made an ENUM
-        // upsertKeyColumn.setType(Property.Type.ENUM);
-        upsertRelationTable.setUseLookupFieldName(true);
 
+        upsertRelationTable.setUseLookupFieldName(true);
         module.setSchemaListener(new ISchemaListener() {
 
             @Override

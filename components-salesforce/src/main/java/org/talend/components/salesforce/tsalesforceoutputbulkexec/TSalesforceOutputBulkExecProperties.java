@@ -60,11 +60,11 @@ public class TSalesforceOutputBulkExecProperties extends TSalesforceBulkExecProp
         // add quotes for generation)
         outputBulkProperties.upsertRelationTable.columnName.setPossibleValues(upsertRelationTable.columnName.getPossibleValues());
         outputBulkProperties.upsertRelationTable.columnName.setValue(upsertRelationTable.columnName.getValue());
-        outputBulkProperties.upsertRelationTable.lookupFieldExternalIdName.setValue(upsertRelationTable.lookupFieldExternalIdName
-                .getValue());
+        outputBulkProperties.upsertRelationTable.lookupFieldExternalIdName
+                .setValue(upsertRelationTable.lookupFieldExternalIdName.getValue());
         outputBulkProperties.upsertRelationTable.lookupFieldName.setValue(upsertRelationTable.lookupFieldName.getValue());
-        outputBulkProperties.upsertRelationTable.lookupFieldModuleName.setValue(upsertRelationTable.lookupFieldModuleName
-                .getValue());
+        outputBulkProperties.upsertRelationTable.lookupFieldModuleName
+                .setValue(upsertRelationTable.lookupFieldModuleName.getValue());
         outputBulkProperties.upsertRelationTable.polymorphic.setValue(upsertRelationTable.polymorphic.getValue());
         return outputBulkProperties;
     }
@@ -75,9 +75,9 @@ public class TSalesforceOutputBulkExecProperties extends TSalesforceBulkExecProp
     public ComponentProperties getOutputComponentProperties() {
         TSalesforceBulkExecProperties bulkExecProperties = new TSalesforceBulkExecProperties("bulkExecProperties");
         bulkExecProperties.copyValuesFrom(this);
+        
         // we need to pass also the possible values, only way from the studio to know it comes from a combo box (need to
         // add quotes for generation)
-        bulkExecProperties.upsertKeyColumn.setPossibleValues(upsertKeyColumn.getPossibleValues());
         bulkExecProperties.upsertRelationTable.columnName.setPossibleValues(upsertRelationTable.columnName.getPossibleValues());
 
         bulkExecProperties.connection.referencedComponent.componentInstanceId.setTaggedValue(ADD_QUOTES, true);
