@@ -44,6 +44,8 @@ public class DataSetReader extends AbstractBoundedReader<IndexedRecord> {
 
     private DataPrepStreamMapper dataPrepStreamMapper;
 
+    private DataPrepAdaptorFactory adaptorFactory;
+
     public DataSetReader(RuntimeContainer container, BoundedSource source, DataPrepConnectionHandler connectionHandler,
             Schema schema) {
         super(container, source);
@@ -86,8 +88,10 @@ public class DataSetReader extends AbstractBoundedReader<IndexedRecord> {
     }
 
     private IndexedRecordAdapterFactory<?, IndexedRecord> getFactory() {
-        DataPrepAdaptorFactory adaptorFactory = new DataPrepAdaptorFactory();
-        adaptorFactory.setSchema(schema);
+        if (adaptorFactory == null) {
+            adaptorFactory = new DataPrepAdaptorFactory();
+            adaptorFactory.setSchema(schema);
+        }
         return adaptorFactory;
     }
 }

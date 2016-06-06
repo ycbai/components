@@ -14,11 +14,18 @@ package org.talend.components.dataprep.runtime;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.talend.components.dataprep.connection.DataPrepField;
+import org.talend.components.dataprep.tdatasetinput.TDataSetInputDefinition;
 import org.talend.daikon.avro.AvroConverter;
+import org.talend.daikon.avro.AvroRegistry;
 import org.talend.daikon.avro.IndexedRecordAdapterFactory;
+import org.talend.daikon.avro.util.AvroUtils;
 
 public class DataPrepAdaptorFactory implements IndexedRecordAdapterFactory<DataPrepField[], IndexedRecord> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TDataSetInputDefinition.class);
 
     private Schema schema;
 
@@ -39,6 +46,11 @@ public class DataPrepAdaptorFactory implements IndexedRecordAdapterFactory<DataP
 
     @Override
     public IndexedRecord convertToAvro(DataPrepField[] dataPrepDataSetRecord) {
+        if (AvroUtils.isIncludeAllFields(schema)) {
+            AvroRegistry avroRegistry = DataPrepAvroRegistry.getDataPrepInstance();
+            schema = avroRegistry.inferSchema(dataPrepDataSetRecord);
+            LOGGER.debug("Source schema is: {}", schema.toString(true));
+        }
         return new DataPrepIndexedRecord(dataPrepDataSetRecord);
     }
 
