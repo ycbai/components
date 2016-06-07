@@ -6,9 +6,9 @@ import org.apache.avro.SchemaBuilder.FieldAssembler;
 import org.apache.avro.generic.IndexedRecord;
 import org.talend.daikon.avro.AvroConverter;
 import org.talend.daikon.avro.AvroRegistry;
+import org.talend.daikon.avro.SchemaConstants;
 import org.talend.daikon.avro.util.AvroUtils;
 import org.talend.daikon.java8.SerializableFunction;
-import org.talend.daikon.talend6.Talend6SchemaConstants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -84,9 +84,9 @@ public class GenericAvroRegistry extends AvroRegistry {
 
         switch (fieldSchema.getType()) {
             case LONG:
-                String pattern = f.getProp(Talend6SchemaConstants.TALEND6_COLUMN_PATTERN);
+                String pattern = f.getProp(SchemaConstants.TALEND_COLUMN_PATTERN);
                 if (pattern != null) {
-                    fieldSchema.addProp(Talend6SchemaConstants.TALEND6_COLUMN_PATTERN, pattern);
+                    fieldSchema.addProp(SchemaConstants.TALEND_COLUMN_PATTERN, pattern);
                     return new DateToStringConvert(fieldSchema);
                 } else {
                     return super.getConverter(String.class);
@@ -127,7 +127,7 @@ public class GenericAvroRegistry extends AvroRegistry {
 
         DateToStringConvert(Schema schema) {
             super(schema);
-            String pattern = schema.getProp(Talend6SchemaConstants.TALEND6_COLUMN_PATTERN);
+            String pattern = schema.getProp(SchemaConstants.TALEND_COLUMN_PATTERN);
             // TODO: null handling
             format = new SimpleDateFormat(pattern);
         }
